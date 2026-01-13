@@ -1,0 +1,42 @@
+environment: development
+
+server:
+  port: 8080
+  host: localhost
+
+database:
+  host: postgres
+  port: 5432
+  user: postgres
+  password: postgres
+  dbname: openauth
+  ssl_mode: disable
+
+redis:
+  host: localhost
+  port: 6379
+  password: ""
+  db: 0
+
+jwt:
+  secret: change-me-in-production
+  access_expiry: 15  # minutes
+  refresh_expiry: 7   # days
+  issuer: openauth
+
+email:
+  smtp_host: ""
+  smtp_port: 587
+  smtp_user: ""
+  smtp_password: ""
+  from_email: ""
+  from_name: "OpenAuth"
+
+sms:
+  provider: ""
+  api_key: ""
+  api_secret: ""
+
+swagger:
+  enabled: true  # Set to false to disable Swagger in production
+  whitelist: []  # IP whitelist (empty = allow all). Supports CIDR notation, e.g., ["127.0.0.1", "192.168.1.0/24"]

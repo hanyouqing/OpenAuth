@@ -1,0 +1,189 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "login": "Login",
+    "logout": "Logout",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "auth": {
+    "login": "Login",
+    "username": "Username",
+    "password": "Password",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "passwordExpiring": "Password expiring soon",
+    "passwordExpiringDescription": "Your password will expire soon. Please change your password to ensure account security.",
+    "passwordExpired": "Password expired",
+    "passwordExpiredDescription": "Your password has expired. Please change your password immediately to ensure account security."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "totalUsers": "Total Users",
+    "totalApplications": "Total Applications",
+    "activeSessions": "Active Sessions"
+  },
+  "users": {
+    "title": "Users",
+    "createUser": "Create User",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "status": "Status",
+    "actions": "Actions"
+  },
+  "applications": {
+    "title": "Applications",
+    "createApplication": "Create Application",
+    "name": "Name",
+    "type": "Type",
+    "status": "Status",
+    "description": "Description",
+    "icon": "Icon",
+    "actions": "Actions"
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": {
+      "title": "Profile",
+      "avatar": "Avatar",
+      "uploadAvatar": "Upload Avatar",
+      "username": "Username",
+      "email": "Email",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "saveChanges": "Save Changes",
+      "profileUpdated": "Profile updated successfully",
+      "avatarUpdated": "Avatar updated successfully",
+      "invalidImage": "You can only upload image files!",
+      "imageTooLarge": "Image must be smaller than 2MB!"
+    },
+    "security": {
+      "title": "Security",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm New Password",
+      "changePassword": "Change Password",
+      "passwordChanged": "Password changed successfully",
+      "passwordMismatch": "New passwords do not match",
+      "passwordChangeMoved": "Password change moved to user menu",
+      "passwordChangeMovedDescription": "Please click on your user avatar in the top right corner and select \"Change Password\" to update your password.",
+      "passwordPolicy": {
+        "title": "Password Policy",
+        "minLength": "Minimum Length",
+        "requireUppercase": "Require Uppercase",
+        "requireLowercase": "Require Lowercase",
+        "requireNumber": "Require Number",
+        "requireSpecialChar": "Require Special Character",
+        "maxAge": "Password Expiration (days)",
+        "maxAgeOptions": {
+          "60": "60 days",
+          "90": "90 days",
+          "180": "180 days",
+          "365": "1 year",
+          "custom": "Custom",
+          "noExpiration": "Never expire"
+        },
+        "expirationWarningDays": "Expiration Warning (days)",
+        "historyCount": "Password History Count",
+        "lockoutThreshold": "Lockout Threshold",
+        "lockoutDuration": "Lockout Duration (minutes)",
+        "savePolicy": "Save Policy",
+        "policyUpdated": "Password policy updated successfully"
+      }
+    },
+    "mfa": {
+      "title": "Multi-Factor Authentication",
+      "forceMFA": "Force MFA",
+      "forceMFADescription": "When enabled, all users must configure at least one verified MFA device to log in",
+      "forceMFAEnabled": "MFA enforcement enabled",
+      "forceMFADisabled": "MFA enforcement disabled",
+      "addDevice": "Add TOTP Device",
+      "devices": "MFA Devices",
+      "type": "Type",
+      "verified": "Verified",
+      "setupTOTP": "Setup TOTP",
+      "deviceName": "Device Name",
+      "generateQRCode": "Generate QR Code",
+      "scanQRCode": "Scan this QR code with your authenticator app:",
+      "enterSecret": "Or enter this secret manually",
+      "enter6DigitCode": "Enter 6-digit code",
+      "verifyAndEnable": "Verify and Enable"
+    }
+  },
+  "system": {
+    "title": "System Information",
+    "health": {
+      "title": "Health",
+      "status": "Status",
+      "service": "Service",
+      "timestamp": "Timestamp",
+      "uptime": "Uptime"
+    },
+    "version": {
+      "title": "Version",
+      "version": "Version",
+      "buildTime": "Build Time",
+      "gitCommit": "Git Commit",
+      "goVersion": "Go Version",
+      "service": "Service"
+    },
+    "metrics": {
+      "title": "Metrics",
+      "description": "Prometheus-compatible metrics (refreshes every 30 seconds)",
+      "chart": "Chart",
+      "raw": "Raw Metrics",
+      "system": "System Metrics",
+      "http": "HTTP Metrics",
+      "business": "Business Metrics",
+      "performance": "Performance Metrics"
+    },
+    "resources": {
+      "title": "System Resources",
+      "cpu": "CPU Usage",
+      "memory": "Memory Usage",
+      "disk": "Disk Usage",
+      "network": "Network Statistics",
+      "cpuCores": "CPU Cores",
+      "used": "Used",
+      "free": "Free",
+      "bytesSent": "Bytes Sent",
+      "bytesRecv": "Bytes Received",
+      "packetsSent": "Packets Sent",
+      "packetsRecv": "Packets Received"
+    },
+    "security": {
+      "title": "Security Settings",
+      "whitelist": {
+        "title": "Whitelist Management",
+        "enableWhitelist": "Enable Whitelist",
+        "enableDescription": "When enabled, only IPs or regions in the whitelist can access the system",
+        "entries": "Whitelist Entries",
+        "addEntry": "Add Entry",
+        "editEntry": "Edit Entry",
+        "type": "Type",
+        "value": "Value",
+        "description": "Description",
+        "enabled": "Enabled",
+        "ip": "IP Address",
+        "region": "Region",
+        "ipHint": "Supports single IP address (e.g., 192.168.1.1) or CIDR format (e.g., 192.168.1.0/24)",
+        "regionHint": "Enter region code, e.g., CN (China), US (United States), etc.",
+        "deleteConfirm": "Are you sure you want to delete this entry?",
+        "policyUpdated": "Whitelist policy updated"
+      }
+    },
+    "error": "Error"
+  }
+}

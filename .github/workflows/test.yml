@@ -1,0 +1,237 @@
+name: Test and Coverage
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: openauth_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+
+      - name: Install bc (calculator)
+        run: sudo apt-get update && sudo apt-get install -y bc
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Run tests with coverage
+        env:
+          OPENAUTH_DATABASE_HOST: localhost
+          OPENAUTH_DATABASE_PORT: 5432
+          OPENAUTH_DATABASE_USER: postgres
+          OPENAUTH_DATABASE_PASSWORD: postgres
+          OPENAUTH_DATABASE_DBNAME: openauth_test
+          OPENAUTH_REDIS_HOST: localhost
+          OPENAUTH_REDIS_PORT: 6379
+          OPENAUTH_JWT_SECRET: test-secret-key-for-ci
+        run: |
+          go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+          go tool cover -func=coverage.out -o coverage.txt
+
+      - name: Generate coverage report
+        run: |
+          echo "# 📊 Test Coverage Report" > coverage_summary.md
+          echo "" >> coverage_summary.md
+          
+          # Get overall coverage percentage
+          COVERAGE=$(go tool cover -func=coverage.out | tail -1 | awk '{print $3}')
+          COVERAGE_NUM=$(echo $COVERAGE | sed 's/%//')
+          
+          # Determine coverage badge
+          if (( $(echo "$COVERAGE_NUM >= 80" | bc -l) )); then
+            BADGE="🟢"
+          elif (( $(echo "$COVERAGE_NUM >= 60" | bc -l) )); then
+            BADGE="🟡"
+          else
+            BADGE="🔴"
+          fi
+          
+          echo "## Overall Coverage: $BADGE **$COVERAGE**" >> coverage_summary.md
+          echo "" >> coverage_summary.md
+          echo "\`\`\`" >> coverage_summary.md
+          go tool cover -func=coverage.out | tail -1 >> coverage_summary.md
+          echo "\`\`\`" >> coverage_summary.md
+          echo "" >> coverage_summary.md
+          
+          # Generate detailed coverage by package
+          echo "## 📦 Coverage by Package" >> coverage_summary.md
+          echo "" >> coverage_summary.md
+          echo "| Package | Coverage | Status |" >> coverage_summary.md
+          echo "|---------|----------|--------|" >> coverage_summary.md
+          
+          go tool cover -func=coverage.out | grep -E "^github.com/hanyouqing/openauth" | while read line; do
+            PKG=$(echo "$line" | awk '{print $1}')
+            COV=$(echo "$line" | awk '{print $3}')
+            COV_NUM=$(echo "$COV" | sed 's/%//')
+            
+            if (( $(echo "$COV_NUM >= 80" | bc -l) )); then
+              STATUS="✅"
+            elif (( $(echo "$COV_NUM >= 50" | bc -l) )); then
+              STATUS="⚠️"
+            else
+              STATUS="❌"
+            fi
+            
+            echo "| \`$PKG\` | $COV | $STATUS |" >> coverage_summary.md
+          done
+          
+          echo "" >> coverage_summary.md
+
+      - name: Find uncovered lines
+        id: uncovered
+        run: |
+          echo "## 🔍 Uncovered Code Analysis" >> coverage_summary.md
+          echo "" >> coverage_summary.md
+          
+          # Get packages with low coverage (< 50%)
+          LOW_COV_PACKAGES=$(go tool cover -func=coverage.out | grep -E "^github.com/hanyouqing/openauth" | awk '{if ($3+0 < 50) print $1 " (" $3 ")"}')
+          
+          if [ -z "$LOW_COV_PACKAGES" ]; then
+            echo "✅ All packages have coverage above 50%" >> coverage_summary.md
+            echo "" >> coverage_summary.md
+          else
+            echo "### ⚠️ Packages with Coverage Below 50%" >> coverage_summary.md
+            echo "" >> coverage_summary.md
+            echo "| Package | Coverage |" >> coverage_summary.md
+            echo "|---------|----------|" >> coverage_summary.md
+            echo "$LOW_COV_PACKAGES" | while read line; do
+              PKG=$(echo "$line" | awk '{print $1}')
+              COV=$(echo "$line" | awk -F'[()]' '{print $2}')
+              echo "| \`$PKG\` | $COV |" >> coverage_summary.md
+            done
+            echo "" >> coverage_summary.md
+          fi
+          
+          # Generate detailed uncovered files report
+          echo "### 📝 Files with Uncovered Code" >> coverage_summary.md
+          echo "" >> coverage_summary.md
+          
+          # Get files with uncovered lines (coverage < 100%)
+          UNCOVERED_FILES=$(go tool cover -func=coverage.out | grep -E "^github.com/hanyouqing/openauth" | awk '{if ($3+0 < 100) print $1 ":" $2 " - " $3}')
+          
+          if [ -z "$UNCOVERED_FILES" ]; then
+            echo "✅ All code is fully covered!" >> coverage_summary.md
+          else
+            echo "The following files have uncovered code:" >> coverage_summary.md
+            echo "" >> coverage_summary.md
+            echo "\`\`\`" >> coverage_summary.md
+            echo "$UNCOVERED_FILES" | head -50 >> coverage_summary.md
+            TOTAL_FILES=$(echo "$UNCOVERED_FILES" | wc -l)
+            if [ $TOTAL_FILES -gt 50 ]; then
+              echo "..." >> coverage_summary.md
+              echo "$(($TOTAL_FILES - 50)) more files with uncovered code" >> coverage_summary.md
+            fi
+            echo "\`\`\`" >> coverage_summary.md
+            echo "" >> coverage_summary.md
+            echo "> 💡 **Tip**: Run \`go tool cover -html=coverage.out\` locally to see detailed line-by-line coverage." >> coverage_summary.md
+          fi
+          
+          # Get overall coverage for summary
+          COVERAGE=$(go tool cover -func=coverage.out | tail -1 | awk '{print $3}')
+          echo "Overall Coverage: $COVERAGE" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            coverage.out
+            coverage.txt
+            coverage_summary.md
+
+      - name: Comment PR with coverage report
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const coverageSummary = fs.readFileSync('coverage_summary.md', 'utf8');
+            
+            // Read test output to check if tests passed
+            let testsPassed = true;
+            try {
+              const testOutput = fs.readFileSync('coverage.txt', 'utf8');
+              testsPassed = !testOutput.includes('FAIL');
+            } catch (e) {
+              // If coverage.txt doesn't exist, assume tests passed if we got here
+              testsPassed = true;
+            }
+            
+            // Find existing coverage comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              (comment.body.includes('Test Coverage Report') || comment.body.includes('🧪 Test Results'))
+            );
+            
+            const statusEmoji = testsPassed ? '✅' : '❌';
+            const statusText = testsPassed ? 'All tests passed' : 'Some tests failed';
+            
+            const commentBody = `## 🧪 Test Results and Coverage Report\n\n**Status**: ${statusEmoji} ${statusText}\n\n${coverageSummary}\n\n---\n*Generated by [GitHub Actions](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})*`;
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody,
+              });
+            }
+
+      - name: Test Summary
+        run: |
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          cat coverage_summary.md >> $GITHUB_STEP_SUMMARY

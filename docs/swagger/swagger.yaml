@@ -1,0 +1,3846 @@
+basePath: /api/v1
+definitions:
+  handlers.CreateWorkflowRequest:
+    properties:
+      actions:
+        items:
+          $ref: '#/definitions/models.AutomationAction'
+        type: array
+      description:
+        type: string
+      name:
+        type: string
+      priority:
+        type: integer
+      trigger:
+        $ref: '#/definitions/models.AutomationTrigger'
+    required:
+    - actions
+    - name
+    - trigger
+    type: object
+  handlers.LoginRequest:
+    description: Login request with username, password and optional MFA code
+    properties:
+      mfa_code:
+        example: "123456"
+        type: string
+      password:
+        example: admin123
+        type: string
+      username:
+        example: admin
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  handlers.RefreshRequest:
+    description: Token refresh request with refresh token
+    properties:
+      refresh_token:
+        example: uuid-refresh-token
+        type: string
+    required:
+    - refresh_token
+    type: object
+  handlers.RegisterRequest:
+    description: Registration request with username, email and password
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      password:
+        example: password123
+        minLength: 8
+        type: string
+      username:
+        example: user
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  handlers.UpdateWorkflowRequest:
+    properties:
+      actions:
+        items:
+          $ref: '#/definitions/models.AutomationAction'
+        type: array
+      description:
+        type: string
+      enabled:
+        type: boolean
+      name:
+        type: string
+      priority:
+        type: integer
+      trigger:
+        $ref: '#/definitions/models.AutomationTrigger'
+    type: object
+  models.Application:
+    properties:
+      config:
+        $ref: '#/definitions/models.JSONB'
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      logo_url:
+        type: string
+      name:
+        type: string
+      oauth_clients:
+        items:
+          $ref: '#/definitions/models.OAuthClient'
+        type: array
+      protocol:
+        description: oauth2, saml, ldap
+        type: string
+      saml_configs:
+        items:
+          $ref: '#/definitions/models.SAMLConfig'
+        type: array
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.AutomationAction:
+    properties:
+      config:
+        additionalProperties: true
+        description: action configuration
+        type: object
+      on_error:
+        description: continue, stop, retry
+        type: string
+      type:
+        description: send_email, create_user, assign_role, etc.
+        type: string
+    type: object
+  models.AutomationTrigger:
+    properties:
+      conditions:
+        additionalProperties: true
+        description: trigger conditions
+        type: object
+      event:
+        description: user.created, user.updated, etc.
+        type: string
+      schedule:
+        description: cron expression
+        type: string
+      type:
+        description: event, schedule, webhook, manual
+        type: string
+    type: object
+  models.ConditionalAccessPolicy:
+    properties:
+      allow_access:
+        type: boolean
+      app_conditions:
+        allOf:
+        - $ref: '#/definitions/models.JSONB'
+        description: application IDs
+      block_access:
+        type: boolean
+      created_at:
+        type: string
+      description:
+        type: string
+      device_conditions:
+        allOf:
+        - $ref: '#/definitions/models.JSONB'
+        description: device types, OS
+      enabled:
+        type: boolean
+      id:
+        type: integer
+      ip_conditions:
+        allOf:
+        - $ref: '#/definitions/models.JSONB'
+        description: IP ranges, countries
+      name:
+        type: string
+      priority:
+        description: Higher priority evaluated first
+        type: integer
+      require_mfa:
+        description: Actions
+        type: boolean
+      require_password_change:
+        type: boolean
+      risk_conditions:
+        allOf:
+        - $ref: '#/definitions/models.JSONB'
+        description: risk levels
+      session_duration:
+        description: minutes, 0 = default
+        type: integer
+      time_conditions:
+        allOf:
+        - $ref: '#/definitions/models.JSONB'
+        description: time ranges, days
+      updated_at:
+        type: string
+      user_conditions:
+        allOf:
+        - $ref: '#/definitions/models.JSONB'
+        description: Conditions
+    type: object
+  models.JSONB:
+    additionalProperties: true
+    type: object
+  models.MFAPolicy:
+    properties:
+      allowed_methods:
+        description: totp, sms, email
+        items:
+          type: string
+        type: array
+      created_at:
+        type: string
+      enabled:
+        type: boolean
+      id:
+        type: integer
+      required:
+        type: boolean
+      updated_at:
+        type: string
+    type: object
+  models.OAuthClient:
+    properties:
+      application_id:
+        type: integer
+      client_id:
+        type: string
+      created_at:
+        type: string
+      grant_types:
+        items:
+          type: string
+        type: array
+      id:
+        type: integer
+      redirect_uris:
+        items:
+          type: string
+        type: array
+      scopes:
+        items:
+          type: string
+        type: array
+    type: object
+  models.PasswordPolicy:
+    properties:
+      created_at:
+        type: string
+      history_count:
+        type: integer
+      id:
+        type: integer
+      lockout_duration:
+        description: minutes
+        type: integer
+      lockout_threshold:
+        type: integer
+      max_age:
+        description: days
+        type: integer
+      min_length:
+        type: integer
+      require_lowercase:
+        type: boolean
+      require_numbers:
+        type: boolean
+      require_special_chars:
+        type: boolean
+      require_uppercase:
+        type: boolean
+      updated_at:
+        type: string
+    type: object
+  models.SAMLConfig:
+    properties:
+      application_id:
+        type: integer
+      attribute_map:
+        $ref: '#/definitions/models.JSONB'
+      certificate:
+        type: string
+      created_at:
+        type: string
+      entity_id:
+        type: string
+      id:
+        type: integer
+      slo_url:
+        type: string
+      sso_url:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.Webhook:
+    properties:
+      created_at:
+        type: string
+      enabled:
+        type: boolean
+      events:
+        description: user.created, user.updated, etc.
+        items:
+          type: string
+        type: array
+      id:
+        type: integer
+      name:
+        type: string
+      retry_count:
+        type: integer
+      timeout:
+        description: seconds
+        type: integer
+      updated_at:
+        type: string
+      url:
+        type: string
+    type: object
+  models.WhitelistEntry:
+    properties:
+      created_at:
+        type: string
+      enabled:
+        type: boolean
+      id:
+        type: integer
+      type:
+        description: ip, email_domain
+        type: string
+      updated_at:
+        type: string
+      value:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@openauth.local
+    name: API Support
+    url: https://github.com/hanyouqing/OpenAuth/issues
+  description: OpenAuth - Open-source Identity and Access Management (IAM) platform
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: https://github.com/hanyouqing/OpenAuth
+  title: OpenAuth API
+  version: "1.0"
+paths:
+  /admin/mfa-policy:
+    get:
+      description: Get current MFA policy configuration (admin only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: MFA policy
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get MFA policy
+      tags:
+      - admin
+    put:
+      consumes:
+      - application/json
+      description: Update MFA policy configuration (admin only)
+      parameters:
+      - description: MFA policy data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.MFAPolicy'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Policy updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update MFA policy
+      tags:
+      - admin
+  /admin/password-policy:
+    get:
+      description: Get current password policy configuration (admin only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password policy
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get password policy
+      tags:
+      - admin
+    put:
+      consumes:
+      - application/json
+      description: Update password policy configuration (admin only)
+      parameters:
+      - description: Password policy data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.PasswordPolicy'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Policy updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update password policy
+      tags:
+      - admin
+  /admin/whitelist:
+    get:
+      description: Get list of whitelist entries, optionally filtered by type (admin
+        only)
+      parameters:
+      - description: Entry type (ip, email_domain)
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Whitelist entries
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List whitelist entries
+      tags:
+      - admin
+    post:
+      consumes:
+      - application/json
+      description: Create a new whitelist entry (admin only)
+      parameters:
+      - description: Whitelist entry data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.WhitelistEntry'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Entry created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create whitelist entry
+      tags:
+      - admin
+  /admin/whitelist-policy:
+    get:
+      description: Get current whitelist policy configuration (admin only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Whitelist policy
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get whitelist policy
+      tags:
+      - admin
+    put:
+      consumes:
+      - application/json
+      description: Update whitelist policy enabled status (admin only)
+      parameters:
+      - description: Enabled status
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: boolean
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Policy updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update whitelist policy
+      tags:
+      - admin
+  /admin/whitelist/{id}:
+    delete:
+      description: Delete whitelist entry by ID (admin only)
+      parameters:
+      - description: Entry ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Entry deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete whitelist entry
+      tags:
+      - admin
+    put:
+      consumes:
+      - application/json
+      description: Update whitelist entry by ID (admin only)
+      parameters:
+      - description: Entry ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Entry data to update
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Entry updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update whitelist entry
+      tags:
+      - admin
+  /api-keys:
+    get:
+      description: Get list of API keys, optionally filtered by user or application
+        (admin only)
+      parameters:
+      - description: Filter by user ID
+        in: query
+        name: user_id
+        type: integer
+      - description: Filter by application ID
+        in: query
+        name: application_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: API key list
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List API keys
+      tags:
+      - api-keys
+    post:
+      consumes:
+      - application/json
+      description: Create a new API key for user or application (admin only)
+      parameters:
+      - description: API key data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: API key created (key shown only once)
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create API key
+      tags:
+      - api-keys
+  /api-keys/{id}:
+    delete:
+      description: Delete API key by ID (admin only)
+      parameters:
+      - description: API Key ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: API key deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete API key
+      tags:
+      - api-keys
+    get:
+      description: Get API key details by ID (admin only)
+      parameters:
+      - description: API Key ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: API key details
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: API key not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get API key by ID
+      tags:
+      - api-keys
+    put:
+      consumes:
+      - application/json
+      description: Update API key information by ID (admin only)
+      parameters:
+      - description: API Key ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: API key data to update
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: API key updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update API key
+      tags:
+      - api-keys
+  /api-keys/{id}/revoke:
+    post:
+      description: Revoke (disable) an API key by ID (admin only)
+      parameters:
+      - description: API Key ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: API key revoked
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Revoke API key
+      tags:
+      - api-keys
+  /applications:
+    get:
+      description: Get list of all applications (admin only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Application list
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get application list
+      tags:
+      - applications
+    post:
+      consumes:
+      - application/json
+      description: Create a new application (admin only)
+      parameters:
+      - description: Application data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.Application'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Application created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create application
+      tags:
+      - applications
+  /applications/{id}:
+    delete:
+      description: Delete application by ID (admin only)
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Application deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete application
+      tags:
+      - applications
+    get:
+      description: Get application details by ID (admin only)
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Application details
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Application not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get application by ID
+      tags:
+      - applications
+    put:
+      consumes:
+      - application/json
+      description: Update application information by ID (admin only)
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Application data to update
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Application updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update application
+      tags:
+      - applications
+  /audit/logs:
+    get:
+      description: Get list of audit logs with filtering and pagination (admin only)
+      parameters:
+      - description: Filter by user ID
+        in: query
+        name: user_id
+        type: integer
+      - description: Filter by action
+        in: query
+        name: action
+        type: string
+      - description: Filter by resource type
+        in: query
+        name: resource_type
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Start date (ISO 8601)
+        in: query
+        name: start_date
+        type: string
+      - description: End date (ISO 8601)
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Audit log list
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List audit logs
+      tags:
+      - audit
+  /audit/logs/{id}:
+    get:
+      description: Get audit log by ID (admin only)
+      parameters:
+      - description: Audit log ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Audit log
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Audit log not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get audit log
+      tags:
+      - audit
+  /audit/logs/export:
+    get:
+      description: Export audit logs to CSV or JSON (admin only)
+      parameters:
+      - default: json
+        description: Export format (csv or json)
+        in: query
+        name: format
+        type: string
+      - description: Start date (ISO 8601)
+        in: query
+        name: start_date
+        type: string
+      - description: End date (ISO 8601)
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Export successful
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Export audit logs
+      tags:
+      - audit
+  /auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Send password reset email to user
+      parameters:
+      - description: Email address
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password reset email sent
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Request password reset
+      tags:
+      - auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with username/password and optional MFA code
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successful
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Authentication failed
+          schema:
+            additionalProperties: true
+            type: object
+      summary: User login
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      description: Logout current user and invalidate session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Logout successful
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Logout failed
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: User logout
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refresh access token using refresh token
+      parameters:
+      - description: Refresh token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.RefreshRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Token refreshed successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Invalid refresh token
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Refresh access token
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user account
+      parameters:
+      - description: Registration data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Registration successful
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request or user already exists
+          schema:
+            additionalProperties: true
+            type: object
+      summary: User registration
+      tags:
+      - auth
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Reset user password using reset token
+      parameters:
+      - description: Reset token and new password
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password reset successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request or invalid token
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Reset password
+      tags:
+      - auth
+  /automation/executions/{id}:
+    get:
+      description: Get an automation execution by ID
+      parameters:
+      - description: Execution ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Execution
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Execution not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get execution
+      tags:
+      - automation
+  /automation/workflows:
+    get:
+      description: List all automation workflows
+      parameters:
+      - description: Filter by enabled status
+        in: query
+        name: enabled
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Workflow list
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List workflows
+      tags:
+      - automation
+    post:
+      consumes:
+      - application/json
+      description: Create a new automation workflow
+      parameters:
+      - description: Workflow data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateWorkflowRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Workflow created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create workflow
+      tags:
+      - automation
+  /automation/workflows/{id}:
+    delete:
+      description: Delete an automation workflow
+      parameters:
+      - description: Workflow ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Workflow deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete workflow
+      tags:
+      - automation
+    get:
+      description: Get a workflow by ID
+      parameters:
+      - description: Workflow ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Workflow
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Workflow not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get workflow
+      tags:
+      - automation
+    put:
+      consumes:
+      - application/json
+      description: Update an automation workflow
+      parameters:
+      - description: Workflow ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Workflow data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UpdateWorkflowRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Workflow updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update workflow
+      tags:
+      - automation
+  /automation/workflows/{id}/executions:
+    get:
+      description: List executions for a workflow
+      parameters:
+      - description: Workflow ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Execution list
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List executions
+      tags:
+      - automation
+  /cas/login:
+    get:
+      description: CAS (Central Authentication Service) protocol login endpoint
+      parameters:
+      - description: Service URL to redirect after login
+        in: query
+        name: service
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: Login page or redirect to service
+      summary: CAS Login
+      tags:
+      - sso
+  /cas/logout:
+    get:
+      description: CAS protocol logout endpoint
+      parameters:
+      - description: Service URL to redirect after logout
+        in: query
+        name: service
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: Logout page or redirect
+      summary: CAS Logout
+      tags:
+      - sso
+  /cas/serviceValidate:
+    get:
+      description: CAS 2.0 protocol service ticket validation endpoint (XML format)
+      parameters:
+      - description: Service ticket
+        in: query
+        name: ticket
+        required: true
+        type: string
+      - description: Service URL
+        in: query
+        name: service
+        required: true
+        type: string
+      produces:
+      - application/xml
+      responses:
+        "200":
+          description: CAS 2.0 XML response
+        "400":
+          description: Invalid ticket
+      summary: CAS 2.0 Service Validate
+      tags:
+      - sso
+  /cas/validate:
+    get:
+      description: CAS 1.0 protocol ticket validation endpoint
+      parameters:
+      - description: Service ticket
+        in: query
+        name: ticket
+        required: true
+        type: string
+      - description: Service URL
+        in: query
+        name: service
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: yes\nusername or no\n
+      summary: CAS 1.0 Validate
+      tags:
+      - sso
+  /conditional-access:
+    get:
+      description: Get list of all conditional access policies (admin only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Policy list
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List conditional access policies
+      tags:
+      - conditional-access
+    post:
+      consumes:
+      - application/json
+      description: Create a new conditional access policy (admin only)
+      parameters:
+      - description: Policy data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ConditionalAccessPolicy'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Policy created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create conditional access policy
+      tags:
+      - conditional-access
+  /conditional-access/{id}:
+    delete:
+      description: Delete conditional access policy by ID (admin only)
+      parameters:
+      - description: Policy ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Policy deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete conditional access policy
+      tags:
+      - conditional-access
+    get:
+      description: Get conditional access policy details by ID (admin only)
+      parameters:
+      - description: Policy ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Policy details
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Policy not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get conditional access policy by ID
+      tags:
+      - conditional-access
+    put:
+      consumes:
+      - application/json
+      description: Update conditional access policy by ID (admin only)
+      parameters:
+      - description: Policy ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Policy data to update
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Policy updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update conditional access policy
+      tags:
+      - conditional-access
+  /devices:
+    get:
+      description: Get all devices associated with the current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Device list
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user devices
+      tags:
+      - devices
+  /devices/{device_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a device for the current user
+      parameters:
+      - description: Device ID
+        in: path
+        name: device_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Device deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete device
+      tags:
+      - devices
+  /devices/{device_id}/trust:
+    post:
+      consumes:
+      - application/json
+      description: Mark a device as trusted for the current user
+      parameters:
+      - description: Device ID
+        in: path
+        name: device_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Device trusted
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Trust device
+      tags:
+      - devices
+  /devices/{device_id}/untrust:
+    post:
+      consumes:
+      - application/json
+      description: Mark a device as untrusted for the current user
+      parameters:
+      - description: Device ID
+        in: path
+        name: device_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Device untrusted
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Untrust device
+      tags:
+      - devices
+  /groups:
+    get:
+      description: Get list of user groups, optionally filtered by organization (admin
+        only)
+      parameters:
+      - description: Organization ID
+        in: query
+        name: organization_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Group list
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List user groups
+      tags:
+      - organizations
+    post:
+      consumes:
+      - application/json
+      description: Create a new user group (admin only)
+      parameters:
+      - description: Group data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Group created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create user group
+      tags:
+      - organizations
+  /groups/{id}:
+    delete:
+      description: Delete user group by ID (admin only)
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Group deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete user group
+      tags:
+      - organizations
+    get:
+      description: Get user group details by ID (admin only)
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Group details
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Group not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user group by ID
+      tags:
+      - organizations
+    put:
+      consumes:
+      - application/json
+      description: Update user group information by ID (admin only)
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Group data to update
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Group updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update user group
+      tags:
+      - organizations
+  /groups/{id}/roles:
+    post:
+      consumes:
+      - application/json
+      description: Assign a role to a user group (admin only)
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Role ID
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            format: int64
+            type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Role assigned to group
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Assign role to group
+      tags:
+      - organizations
+  /groups/{id}/roles/{role_id}:
+    delete:
+      description: Remove a role from a user group (admin only)
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Role ID
+        in: path
+        name: role_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Role removed from group
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Remove role from group
+      tags:
+      - organizations
+  /groups/{id}/users:
+    post:
+      consumes:
+      - application/json
+      description: Add a user to a user group (admin only)
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User ID
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            format: int64
+            type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User added to group
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Add user to group
+      tags:
+      - organizations
+  /groups/{id}/users/{user_id}:
+    delete:
+      description: Remove a user from a user group (admin only)
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User removed from group
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Remove user from group
+      tags:
+      - organizations
+  /health:
+    get:
+      description: Check system health status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Health check
+      tags:
+      - system
+  /ldap:
+    post:
+      description: LDAP protocol handler endpoint (placeholder - use LDAP client to
+        connect)
+      produces:
+      - application/json
+      responses:
+        "501":
+          description: Not implemented - use LDAP client
+          schema:
+            additionalProperties: true
+            type: object
+      summary: LDAP Protocol Handler
+      tags:
+      - sso
+  /metrics:
+    get:
+      description: Get system metrics in JSON or Prometheus format
+      parameters:
+      - description: Output format (prometheus)
+        in: query
+        name: format
+        type: string
+      produces:
+      - application/json
+      - text/plain
+      responses:
+        "200":
+          description: Metrics data
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get metrics
+      tags:
+      - system
+  /mfa/devices:
+    get:
+      description: Get list of all MFA devices for current authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: MFA devices list
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List MFA devices
+      tags:
+      - mfa
+  /mfa/devices/{id}:
+    delete:
+      description: Delete an MFA device by ID
+      parameters:
+      - description: Device ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Device deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete MFA device
+      tags:
+      - mfa
+  /mfa/devices/email:
+    post:
+      consumes:
+      - application/json
+      description: Send email verification code to email address
+      parameters:
+      - description: Email address
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email sent
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Send email code
+      tags:
+      - mfa
+  /mfa/devices/email/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verify email verification code
+      parameters:
+      - description: Email code
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email verified successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid code
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Verify email code
+      tags:
+      - mfa
+  /mfa/devices/sms:
+    post:
+      consumes:
+      - application/json
+      description: Send SMS verification code to phone number
+      parameters:
+      - description: Phone number
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: SMS sent
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Send SMS code
+      tags:
+      - mfa
+  /mfa/devices/sms/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verify SMS verification code
+      parameters:
+      - description: SMS code
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: SMS verified successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid code
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Verify SMS code
+      tags:
+      - mfa
+  /mfa/devices/totp:
+    post:
+      consumes:
+      - application/json
+      description: Create a new TOTP (Time-based One-Time Password) device for MFA
+      parameters:
+      - description: Device name
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: TOTP device created with secret and QR URL
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create TOTP device
+      tags:
+      - mfa
+  /mfa/devices/totp/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verify TOTP code from authenticator app
+      parameters:
+      - description: TOTP code
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: TOTP verified successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid code
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Verify TOTP code
+      tags:
+      - mfa
+  /oauth2/authorize:
+    get:
+      description: OAuth 2.0 Authorization Code Flow authorization endpoint
+      parameters:
+      - description: Response type (code)
+        in: query
+        name: response_type
+        required: true
+        type: string
+      - description: Client ID
+        in: query
+        name: client_id
+        required: true
+        type: string
+      - description: Redirect URI
+        in: query
+        name: redirect_uri
+        required: true
+        type: string
+      - description: Requested scopes
+        in: query
+        name: scope
+        type: string
+      - description: State parameter
+        in: query
+        name: state
+        type: string
+      produces:
+      - application/json
+      responses:
+        "302":
+          description: Redirect to authorization page or redirect_uri
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: OAuth 2.0 Authorization
+      tags:
+      - sso
+  /oauth2/token:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: OAuth 2.0 Resource Owner Password Credentials Flow
+      parameters:
+      - description: Grant type (password)
+        in: formData
+        name: grant_type
+        required: true
+        type: string
+      - description: Username
+        in: formData
+        name: username
+        required: true
+        type: string
+      - description: Password
+        in: formData
+        name: password
+        required: true
+        type: string
+      - description: Client ID (optional)
+        in: formData
+        name: client_id
+        type: string
+      - description: Client secret (optional)
+        in: formData
+        name: client_secret
+        type: string
+      - description: Requested scopes
+        in: formData
+        name: scope
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Access token and refresh token
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Invalid credentials
+          schema:
+            additionalProperties: true
+            type: object
+      summary: OAuth 2.0 Password Credentials
+      tags:
+      - sso
+  /oauth2/userinfo:
+    get:
+      description: Get user information using access token (OIDC UserInfo endpoint)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User information
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Invalid token
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: OIDC UserInfo
+      tags:
+      - sso
+  /organizations:
+    get:
+      description: Get list of all organizations (admin only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Organization list
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List organizations
+      tags:
+      - organizations
+    post:
+      consumes:
+      - application/json
+      description: Create a new organization (admin only)
+      parameters:
+      - description: Organization data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Organization created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create organization
+      tags:
+      - organizations
+  /organizations/{id}:
+    delete:
+      description: Delete organization by ID (admin only)
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Organization deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete organization
+      tags:
+      - organizations
+    get:
+      description: Get organization details by ID (admin only)
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Organization details
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Organization not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get organization by ID
+      tags:
+      - organizations
+    put:
+      consumes:
+      - application/json
+      description: Update organization information by ID (admin only)
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Organization data to update
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Organization updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update organization
+      tags:
+      - organizations
+  /organizations/{id}/users:
+    get:
+      description: Get list of users in an organization (admin only)
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User list
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get organization users
+      tags:
+      - organizations
+    post:
+      consumes:
+      - application/json
+      description: Add a user to an organization (admin only)
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User ID
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            format: int64
+            type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User added to organization
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Add user to organization
+      tags:
+      - organizations
+  /organizations/{id}/users/{user_id}:
+    delete:
+      description: Remove a user from an organization (admin only)
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User removed from organization
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Remove user from organization
+      tags:
+      - organizations
+  /permissions:
+    get:
+      description: Get list of all permissions (admin only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Permission list
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List permissions
+      tags:
+      - roles
+    post:
+      consumes:
+      - application/json
+      description: Create a new permission (admin only)
+      parameters:
+      - description: Permission data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Permission created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create permission
+      tags:
+      - roles
+  /permissions/{id}:
+    delete:
+      description: Delete permission by ID (admin only)
+      parameters:
+      - description: Permission ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Permission deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete permission
+      tags:
+      - roles
+  /roles:
+    get:
+      description: Get list of all roles (admin only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Role list
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List roles
+      tags:
+      - roles
+    post:
+      consumes:
+      - application/json
+      description: Create a new role (admin only)
+      parameters:
+      - description: Role data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Role created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create role
+      tags:
+      - roles
+  /roles/{id}:
+    delete:
+      description: Delete role by ID (admin only)
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Role deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete role
+      tags:
+      - roles
+    get:
+      description: Get role details by role ID (admin only)
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Role details
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Role not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get role by ID
+      tags:
+      - roles
+    put:
+      consumes:
+      - application/json
+      description: Update role information by ID (admin only)
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Role data to update
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Role updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update role
+      tags:
+      - roles
+  /roles/{id}/permissions:
+    post:
+      consumes:
+      - application/json
+      description: Assign permissions to a role (admin only)
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Permission IDs
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            items:
+              format: int64
+              type: integer
+            type: array
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Permissions assigned
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Assign permissions to role
+      tags:
+      - roles
+  /roles/{id}/users:
+    post:
+      consumes:
+      - application/json
+      description: Assign role to multiple users (admin only)
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User IDs
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            items:
+              format: int64
+              type: integer
+            type: array
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Role assigned to users
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Assign role to users
+      tags:
+      - roles
+  /saml/metadata:
+    get:
+      description: Get SAML 2.0 Entity Descriptor metadata
+      parameters:
+      - description: Application ID
+        in: query
+        name: application_id
+        required: true
+        type: integer
+      produces:
+      - application/xml
+      responses:
+        "200":
+          description: SAML Metadata XML
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: SAML 2.0 Metadata
+      tags:
+      - sso
+  /saml/slo:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: SAML 2.0 Single Logout endpoint
+      parameters:
+      - description: SAML Logout Request
+        in: query
+        name: SAMLRequest
+        type: string
+      - description: SAML Logout Response
+        in: formData
+        name: SAMLResponse
+        type: string
+      - description: Relay state
+        in: query
+        name: RelayState
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: SAML Logout Response (POST form or redirect)
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: SAML 2.0 SLO
+      tags:
+      - sso
+  /saml/sso:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: SAML 2.0 Single Sign-On endpoint (supports SP-initiated and IdP-initiated)
+      parameters:
+      - description: SAML Request (SP-initiated)
+        in: query
+        name: SAMLRequest
+        type: string
+      - description: SAML Response
+        in: formData
+        name: SAMLResponse
+        type: string
+      - description: Relay state
+        in: query
+        name: RelayState
+        type: string
+      produces:
+      - text/html
+      - application/json
+      responses:
+        "200":
+          description: SAML Response (POST form or redirect)
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: SAML 2.0 SSO
+      tags:
+      - sso
+  /sessions:
+    delete:
+      description: Delete all sessions for current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: All sessions deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete all sessions
+      tags:
+      - sessions
+    get:
+      description: Get paginated list of user sessions
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Session list
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List sessions
+      tags:
+      - sessions
+  /sessions/{id}:
+    delete:
+      description: Delete a session by ID
+      parameters:
+      - description: Session ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Session deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete session
+      tags:
+      - sessions
+  /sessions/active/count:
+    get:
+      description: Get count of active sessions for current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Active session count
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get active session count
+      tags:
+      - sessions
+  /users:
+    get:
+      description: Get paginated list of users (admin only)
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User list
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user list
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account (admin only)
+      parameters:
+      - description: User data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create user
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      description: Delete user by ID (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete user
+      tags:
+      - users
+    get:
+      description: Get user details by user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User details
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user by ID
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update user information by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User data to update
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update user
+      tags:
+      - users
+  /users/export/csv:
+    get:
+      description: Export all users to CSV format (admin only)
+      produces:
+      - text/csv
+      responses:
+        "200":
+          description: CSV file
+          schema:
+            type: file
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Export users to CSV
+      tags:
+      - users
+  /users/export/json:
+    get:
+      description: Export all users to JSON format (admin only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: JSON file
+          schema:
+            type: file
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Export users to JSON
+      tags:
+      - users
+  /users/import/csv:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Import users from CSV file (admin only)
+      parameters:
+      - description: CSV file
+        in: formData
+        name: file
+        required: true
+        type: file
+      - default: true
+        description: Skip header row
+        in: query
+        name: skip_header
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Import result
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Import users from CSV
+      tags:
+      - users
+  /users/import/json:
+    post:
+      consumes:
+      - multipart/form-data
+      - application/json
+      description: Import users from JSON file or body (admin only)
+      parameters:
+      - description: JSON file
+        in: formData
+        name: file
+        type: file
+      - description: JSON array of users
+        in: body
+        name: body
+        schema:
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Import result
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Import users from JSON
+      tags:
+      - users
+  /users/me:
+    get:
+      description: Get current authenticated user information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Current user details
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get current user
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update current authenticated user information
+      parameters:
+      - description: User data to update
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update current user
+      tags:
+      - users
+  /users/me/avatar:
+    put:
+      consumes:
+      - application/json
+      description: Upload avatar URL for current authenticated user
+      parameters:
+      - description: Avatar URL
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Avatar updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Upload avatar
+      tags:
+      - users
+  /users/me/password:
+    put:
+      consumes:
+      - application/json
+      description: Change password for current authenticated user
+      parameters:
+      - description: Old and new password
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password changed
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request or wrong password
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Change password
+      tags:
+      - users
+  /version:
+    get:
+      description: Get system version information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get version
+      tags:
+      - system
+  /webhooks:
+    get:
+      description: Get list of all webhooks (admin only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Webhook list
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List webhooks
+      tags:
+      - webhooks
+    post:
+      consumes:
+      - application/json
+      description: Create a new webhook (admin only)
+      parameters:
+      - description: Webhook data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.Webhook'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Webhook created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create webhook
+      tags:
+      - webhooks
+  /webhooks/{id}:
+    delete:
+      description: Delete webhook by ID (admin only)
+      parameters:
+      - description: Webhook ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Webhook deleted
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete webhook
+      tags:
+      - webhooks
+    get:
+      description: Get webhook details by ID (admin only)
+      parameters:
+      - description: Webhook ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Webhook details
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Webhook not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get webhook by ID
+      tags:
+      - webhooks
+    put:
+      consumes:
+      - application/json
+      description: Update webhook information by ID (admin only)
+      parameters:
+      - description: Webhook ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Webhook data to update
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Webhook updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update webhook
+      tags:
+      - webhooks
+  /webhooks/{id}/events:
+    get:
+      description: Get event history for a webhook (admin only)
+      parameters:
+      - description: Webhook ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: 50
+        description: Limit number of events
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Event history
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get webhook events
+      tags:
+      - webhooks
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -1,0 +1,296 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., 1.0.0)'
+        required: false
+        default: 'latest'
+      push_to_dockerhub:
+        description: 'Push to Docker Hub'
+        type: boolean
+        default: true
+      push_to_ghcr:
+        description: 'Push to GitHub Container Registry'
+        type: boolean
+        default: true
+      push_to_quay:
+        description: 'Push to Quay.io'
+        type: boolean
+        default: false
+      push_to_aliyun:
+        description: 'Push to Aliyun Container Registry'
+        type: boolean
+        default: false
+
+env:
+  REGISTRY_DOCKERHUB: docker.io
+  REGISTRY_GHCR: ghcr.io
+  REGISTRY_QUAY: quay.io
+  REGISTRY_ALIYUN: registry.cn-hangzhou.aliyuncs.com
+  IMAGE_NAME_BACKEND: openauth-backend
+  IMAGE_NAME_FRONTEND: openauth-frontend
+
+jobs:
+  build-and-push:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Determine push targets
+        id: push-targets
+        run: |
+          # For workflow_dispatch, use input values
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            PUSH_DOCKERHUB="${{ github.event.inputs.push_to_dockerhub }}"
+            PUSH_GHCR="${{ github.event.inputs.push_to_ghcr }}"
+            PUSH_QUAY="${{ github.event.inputs.push_to_quay }}"
+            PUSH_ALIYUN="${{ github.event.inputs.push_to_aliyun }}"
+          else
+            # For push events, push to all enabled registries
+            PUSH_DOCKERHUB="true"
+            PUSH_GHCR="true"
+            PUSH_QUAY="false"
+            PUSH_ALIYUN="false"
+          fi
+          
+          # For PR, don't push
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            PUSH_DOCKERHUB="false"
+            PUSH_GHCR="false"
+            PUSH_QUAY="false"
+            PUSH_ALIYUN="false"
+          fi
+          
+          echo "push_dockerhub=$PUSH_DOCKERHUB" >> $GITHUB_OUTPUT
+          echo "push_ghcr=$PUSH_GHCR" >> $GITHUB_OUTPUT
+          echo "push_quay=$PUSH_QUAY" >> $GITHUB_OUTPUT
+          echo "push_aliyun=$PUSH_ALIYUN" >> $GITHUB_OUTPUT
+          
+          echo "📦 Push targets:"
+          echo "  - Docker Hub: $PUSH_DOCKERHUB"
+          echo "  - GHCR: $PUSH_GHCR"
+          echo "  - Quay.io: $PUSH_QUAY"
+          echo "  - Aliyun: $PUSH_ALIYUN"
+
+      - name: Log in to Docker Hub
+        if: steps.push-targets.outputs.push_dockerhub == 'true'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Log in to GitHub Container Registry
+        if: steps.push-targets.outputs.push_ghcr == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY_GHCR }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Quay.io
+        if: steps.push-targets.outputs.push_quay == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY_QUAY }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_TOKEN }}
+
+      - name: Log in to Aliyun Container Registry
+        if: steps.push-targets.outputs.push_aliyun == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY_ALIYUN }}
+          username: ${{ secrets.ALIYUN_USERNAME }}
+          password: ${{ secrets.ALIYUN_PASSWORD }}
+
+      - name: Get version info
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.version }}" ] && [ "${{ github.event.inputs.version }}" != "latest" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          elif [ -n "${{ github.ref }}" ] && [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          elif [ "${{ github.ref }}" == "refs/heads/main" ] || [ "${{ github.ref }}" == "refs/heads/master" ]; then
+            VERSION="latest"
+          else
+            VERSION=$(git describe --tags --always --dirty || echo "dev")
+          fi
+          
+          BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          GIT_COMMIT=$(git rev-parse --short HEAD)
+          GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "build_time=$BUILD_TIME" >> $GITHUB_OUTPUT
+          echo "git_commit=$GIT_COMMIT" >> $GITHUB_OUTPUT
+          echo "git_branch=$GIT_BRANCH" >> $GITHUB_OUTPUT
+          
+          echo "📌 Build Info:"
+          echo "  Version: $VERSION"
+          echo "  Build Time: $BUILD_TIME"
+          echo "  Git Commit: $GIT_COMMIT"
+          echo "  Git Branch: $GIT_BRANCH"
+
+      - name: Prepare image names
+        id: image-names
+        run: |
+          BACKEND_IMAGES=""
+          FRONTEND_IMAGES=""
+          
+          if [ "${{ steps.push-targets.outputs.push_dockerhub }}" = "true" ]; then
+            BACKEND_IMAGES="$BACKEND_IMAGES
+            ${{ env.REGISTRY_DOCKERHUB }}/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME_BACKEND }}"
+            FRONTEND_IMAGES="$FRONTEND_IMAGES
+            ${{ env.REGISTRY_DOCKERHUB }}/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME_FRONTEND }}"
+          fi
+          
+          if [ "${{ steps.push-targets.outputs.push_ghcr }}" = "true" ]; then
+            BACKEND_IMAGES="$BACKEND_IMAGES
+            ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BACKEND }}"
+            FRONTEND_IMAGES="$FRONTEND_IMAGES
+            ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_FRONTEND }}"
+          fi
+          
+          if [ "${{ steps.push-targets.outputs.push_quay }}" = "true" ]; then
+            BACKEND_IMAGES="$BACKEND_IMAGES
+            ${{ env.REGISTRY_QUAY }}/${{ secrets.QUAY_USERNAME }}/${{ env.IMAGE_NAME_BACKEND }}"
+            FRONTEND_IMAGES="$FRONTEND_IMAGES
+            ${{ env.REGISTRY_QUAY }}/${{ secrets.QUAY_USERNAME }}/${{ env.IMAGE_NAME_FRONTEND }}"
+          fi
+          
+          if [ "${{ steps.push-targets.outputs.push_aliyun }}" = "true" ]; then
+            BACKEND_IMAGES="$BACKEND_IMAGES
+            ${{ env.REGISTRY_ALIYUN }}/${{ secrets.ALIYUN_NAMESPACE }}/${{ env.IMAGE_NAME_BACKEND }}"
+            FRONTEND_IMAGES="$FRONTEND_IMAGES
+            ${{ env.REGISTRY_ALIYUN }}/${{ secrets.ALIYUN_NAMESPACE }}/${{ env.IMAGE_NAME_FRONTEND }}"
+          fi
+          
+          # Remove leading newline
+          BACKEND_IMAGES=$(echo "$BACKEND_IMAGES" | sed '/^$/d')
+          FRONTEND_IMAGES=$(echo "$FRONTEND_IMAGES" | sed '/^$/d')
+          
+          echo "backend_images<<EOF" >> $GITHUB_OUTPUT
+          echo "$BACKEND_IMAGES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          echo "frontend_images<<EOF" >> $GITHUB_OUTPUT
+          echo "$FRONTEND_IMAGES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Extract metadata for backend
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.image-names.outputs.backend_images }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.version != '' }}
+
+      - name: Extract metadata for frontend
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.image-names.outputs.frontend_images }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.version != '' }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.backend
+          push: ${{ steps.push-targets.outputs.push_dockerhub == 'true' || steps.push-targets.outputs.push_ghcr == 'true' || steps.push-targets.outputs.push_quay == 'true' || steps.push-targets.outputs.push_aliyun == 'true' }}
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+          build-args: |
+            VERSION=${{ steps.version.outputs.version }}
+            BUILD_TIME=${{ steps.version.outputs.build_time }}
+            GIT_COMMIT=${{ steps.version.outputs.git_commit }}
+            GIT_BRANCH=${{ steps.version.outputs.git_branch }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./web
+          file: ./web/Dockerfile
+          push: ${{ steps.push-targets.outputs.push_dockerhub == 'true' || steps.push-targets.outputs.push_ghcr == 'true' || steps.push-targets.outputs.push_quay == 'true' || steps.push-targets.outputs.push_aliyun == 'true' }}
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+      - name: Image summary
+        if: steps.push-targets.outputs.push_dockerhub == 'true' || steps.push-targets.outputs.push_ghcr == 'true' || steps.push-targets.outputs.push_quay == 'true' || steps.push-targets.outputs.push_aliyun == 'true'
+        run: |
+          echo "## 🐳 Docker Images Built and Pushed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version**: \`${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Build Time**: \`${{ steps.version.outputs.build_time }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Git Commit**: \`${{ steps.version.outputs.git_commit }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "### Backend Image" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.push-targets.outputs.push_dockerhub }}" = "true" ]; then
+            echo "- **Docker Hub**: \`${{ env.REGISTRY_DOCKERHUB }}/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME_BACKEND }}:${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ "${{ steps.push-targets.outputs.push_ghcr }}" = "true" ]; then
+            echo "- **GHCR**: \`${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BACKEND }}:${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ "${{ steps.push-targets.outputs.push_quay }}" = "true" ]; then
+            echo "- **Quay.io**: \`${{ env.REGISTRY_QUAY }}/${{ secrets.QUAY_USERNAME }}/${{ env.IMAGE_NAME_BACKEND }}:${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ "${{ steps.push-targets.outputs.push_aliyun }}" = "true" ]; then
+            echo "- **Aliyun**: \`${{ env.REGISTRY_ALIYUN }}/${{ secrets.ALIYUN_NAMESPACE }}/${{ env.IMAGE_NAME_BACKEND }}:${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "### Frontend Image" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.push-targets.outputs.push_dockerhub }}" = "true" ]; then
+            echo "- **Docker Hub**: \`${{ env.REGISTRY_DOCKERHUB }}/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ "${{ steps.push-targets.outputs.push_ghcr }}" = "true" ]; then
+            echo "- **GHCR**: \`${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ "${{ steps.push-targets.outputs.push_quay }}" = "true" ]; then
+            echo "- **Quay.io**: \`${{ env.REGISTRY_QUAY }}/${{ secrets.QUAY_USERNAME }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ "${{ steps.push-targets.outputs.push_aliyun }}" = "true" ]; then
+            echo "- **Aliyun**: \`${{ env.REGISTRY_ALIYUN }}/${{ secrets.ALIYUN_NAMESPACE }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "*Generated by [GitHub Actions](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})*" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,174 @@
+{
+  "common": {
+    "welcome": "欢迎",
+    "login": "登录",
+    "logout": "登出",
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "create": "创建",
+    "search": "搜索",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "yes": "是",
+    "no": "否"
+  },
+  "auth": {
+    "login": "登录",
+    "username": "用户名",
+    "password": "密码",
+    "rememberMe": "记住我",
+    "forgotPassword": "忘记密码？",
+    "passwordExpiring": "密码即将过期",
+    "passwordExpiringDescription": "您的密码即将过期，为了账户安全，请及时修改密码。",
+    "passwordExpired": "密码已过期",
+    "passwordExpiredDescription": "您的密码已过期，请立即修改密码以确保账户安全。"
+  },
+  "dashboard": {
+    "title": "仪表板",
+    "totalUsers": "总用户数",
+    "totalApplications": "总应用数",
+    "activeSessions": "活跃会话"
+  },
+  "users": {
+    "title": "用户",
+    "createUser": "创建用户",
+    "username": "用户名",
+    "email": "邮箱",
+    "password": "密码",
+    "firstName": "名",
+    "lastName": "姓",
+    "status": "状态",
+    "actions": "操作"
+  },
+  "applications": {
+    "title": "应用",
+    "createApplication": "创建应用",
+    "name": "名称",
+    "type": "类型",
+    "status": "状态",
+    "description": "描述",
+    "icon": "图标",
+    "actions": "操作"
+  },
+  "settings": {
+    "title": "设置",
+    "profile": {
+      "title": "个人资料",
+      "avatar": "头像",
+      "uploadAvatar": "上传头像",
+      "username": "用户名",
+      "email": "邮箱",
+      "firstName": "名",
+      "lastName": "姓",
+      "saveChanges": "保存更改",
+      "profileUpdated": "个人资料更新成功",
+      "avatarUpdated": "头像更新成功",
+      "invalidImage": "只能上传图片文件",
+      "imageTooLarge": "图片大小不能超过2MB"
+    },
+    "security": {
+      "title": "安全",
+      "currentPassword": "当前密码",
+      "newPassword": "新密码",
+      "confirmPassword": "确认新密码",
+      "changePassword": "修改密码",
+      "passwordChanged": "密码修改成功",
+      "passwordMismatch": "新密码不匹配",
+      "passwordChangeMoved": "密码修改功能已移至用户菜单",
+      "passwordChangeMovedDescription": "请点击右上角用户头像，选择\"修改密码\"来更改您的密码。",
+      "passwordPolicy": {
+        "title": "密码策略",
+        "minLength": "最小长度",
+        "requireUppercase": "要求大写字母",
+        "requireLowercase": "要求小写字母",
+        "requireNumber": "要求数字",
+        "requireSpecialChar": "要求特殊字符",
+        "maxAge": "密码有效期（天）",
+        "maxAgeOptions": {
+          "60": "60 天",
+          "90": "90 天",
+          "180": "180 天",
+          "365": "一年",
+          "custom": "自定义",
+          "noExpiration": "永不过期"
+        },
+        "expirationWarningDays": "到期提醒天数",
+        "historyCount": "密码历史记录数",
+        "lockoutThreshold": "锁定阈值",
+        "lockoutDuration": "锁定时长（分钟）",
+        "savePolicy": "保存策略",
+        "policyUpdated": "密码策略更新成功"
+      }
+    },
+    "mfa": {
+      "title": "多因素认证"
+    }
+  },
+  "system": {
+    "title": "系统信息",
+    "health": {
+      "title": "健康状态",
+      "status": "状态",
+      "service": "服务",
+      "timestamp": "时间戳",
+      "uptime": "运行时间"
+    },
+    "version": {
+      "title": "版本信息",
+      "version": "版本",
+      "buildTime": "构建时间",
+      "gitCommit": "Git 提交",
+      "goVersion": "Go 版本",
+      "service": "服务"
+    },
+    "metrics": {
+      "title": "指标",
+      "description": "Prometheus 兼容指标（每30秒刷新）",
+      "chart": "图表",
+      "raw": "原始指标",
+      "system": "系统指标",
+      "http": "HTTP 指标",
+      "business": "业务指标",
+      "performance": "性能指标"
+    },
+    "resources": {
+      "title": "系统资源",
+      "cpu": "CPU 使用率",
+      "memory": "内存使用率",
+      "disk": "磁盘使用率",
+      "network": "网络统计",
+      "cpuCores": "CPU 核心数",
+      "used": "已使用",
+      "free": "可用",
+      "bytesSent": "发送字节数",
+      "bytesRecv": "接收字节数",
+      "packetsSent": "发送数据包",
+      "packetsRecv": "接收数据包"
+    },
+    "security": {
+      "title": "安全设置",
+      "whitelist": {
+        "title": "白名单管理",
+        "enableWhitelist": "启用白名单",
+        "enableDescription": "启用后，只有白名单中的IP或地区可以访问系统",
+        "entries": "白名单条目",
+        "addEntry": "添加条目",
+        "editEntry": "编辑条目",
+        "type": "类型",
+        "value": "值",
+        "description": "描述",
+        "enabled": "启用",
+        "ip": "IP地址",
+        "region": "地区",
+        "ipHint": "支持单个IP地址（如：192.168.1.1）或CIDR格式（如：192.168.1.0/24）",
+        "regionHint": "输入地区代码，如：CN（中国）、US（美国）等",
+        "deleteConfirm": "确定要删除此条目吗？",
+        "policyUpdated": "白名单策略已更新"
+      }
+    },
+    "error": "错误"
+  }
+}
